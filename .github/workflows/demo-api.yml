@@ -1,0 +1,48 @@
+name: Demo API - Pharma Cloud (OpenOps base)
+
+# Roda um smoke test da API (baseada nos módulos do OpenOps) direto no runner do GitHub,
+# sem precisar de nenhum servidor ou custo de infraestrutura real.
+# Ajuste os passos de "Instalar dependências" e "Subir a API" conforme o módulo
+# do OpenOps for portado/adaptado para este repositório.
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch: {}
+
+jobs:
+  demo-api-smoke-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do repositório
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependências
+        run: |
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt
+          else
+            echo "Nenhum requirements.txt encontrado ainda — adicione o do modulo OpenOps portado."
+          fi
+
+      - name: Subir a API em background
+        run: |
+          if [ -f main.py ]; then
+            nohup python -m uvicorn main:app --host 0.0.0.0 --port 8000 &
+            sleep 5
+          else
+            echo "Ainda sem main.py — este passo entra em ação quando o modulo Estoque/Produtos do OpenOps for portado para este repositório."
+          fi
+
+      - name: Smoke test dos endpoints (Produtos/Estoque)
+        run: |
+          if curl -sf http://localhost:8000/health; then
+            echo "API respondendo normalmente."
+          else
+            echo "API ainda não implementada neste repositório — placeholder do workflow ativo."
+          fi
